@@ -14,6 +14,7 @@ bower_components/
 
 # Environment variables
 .env
+config.env
 
 # Build directories
 dist/
