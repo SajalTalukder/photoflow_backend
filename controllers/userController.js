@@ -81,7 +81,6 @@ exports.suggestedUser = catchAsync(async (req, res, next) => {
   });
 });
 
-// follow unfollow features
 exports.followUnfollow = catchAsync(async (req, res, next) => {
   const loggedInUserId = req.user._id; // Get the logged-in user ID
   const targetUserId = req.params.id; // Get the target user ID from request parameters
@@ -101,8 +100,8 @@ exports.followUnfollow = catchAsync(async (req, res, next) => {
   // Determine if the logged-in user is already following the target user
   const isFollowing = targetUser.followers.includes(loggedInUserId);
 
-  // If the user is already following, perform the unfollow action
   if (isFollowing) {
+    // Unfollow action
     await Promise.all([
       User.updateOne(
         { _id: loggedInUserId },
@@ -113,12 +112,8 @@ exports.followUnfollow = catchAsync(async (req, res, next) => {
         { $pull: { followers: loggedInUserId } } // Remove the logged-in user from the 'followers' list
       ),
     ]);
-    return res.status(200).json({
-      message: "Unfollowed successfully",
-      status: "success",
-    });
   } else {
-    // If the user is not already following, perform the follow action
+    // Follow action
     await Promise.all([
       User.updateOne(
         { _id: loggedInUserId },
@@ -129,12 +124,21 @@ exports.followUnfollow = catchAsync(async (req, res, next) => {
         { $addToSet: { followers: loggedInUserId } } // Add the logged-in user to the 'followers' list
       ),
     ]);
-
-    return res.status(200).json({
-      message: "Followed successfully",
-      status: "success",
-    });
   }
+
+  // Fetch the updated logged-in user details
+  const updatedLoggedInUser = await User.findById(loggedInUserId).select(
+    "-password"
+  );
+
+  // Send the response with the updated logged-in user
+  res.status(200).json({
+    message: isFollowing ? "Unfollowed successfully" : "Followed successfully",
+    status: "success",
+    data: {
+      user: updatedLoggedInUser,
+    },
+  });
 });
 
 exports.searchUsers = catchAsync(async (req, res, next) => {

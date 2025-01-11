@@ -127,6 +127,9 @@ exports.saveOrUnsavePost = catchAsync(async (req, res, next) => {
     return res.status(200).json({
       status: "success",
       message: "Post unsaved successfully",
+      data: {
+        user,
+      },
     });
   } else {
     // Save the post if it is not already saved
