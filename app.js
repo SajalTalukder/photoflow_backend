@@ -62,12 +62,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/", (req, res, next) => {
-  console.log("Hello from the middleware");
-  res.status(200).json({ message: "Hello from the Server" });
-  next();
-});
-
 // // // 3) ROUTES
 // // app.use("/api/v1/products", productRouter);
 app.use("/api/v1/users", userRouter);
