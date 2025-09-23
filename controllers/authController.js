@@ -30,6 +30,7 @@ const createSendToken = (user, statusCode, res, message) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production", //only secure in production
     sameSite: process.env.NODE_ENV === "production" ? "none" : "Lax",
+    path: "/",
   };
 
   res.cookie("token", token, cookieOptions);
@@ -201,6 +202,7 @@ exports.logout = catchAsync(async (req, res, next) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "none" : "Lax",
+    path: "/",
   });
 
   res.status(200).json({
