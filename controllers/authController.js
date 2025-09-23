@@ -196,12 +196,13 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 
 // Logout functionality
+// Logout functionality
 exports.logout = catchAsync(async (req, res, next) => {
-  // Clear the token cookie
-  res.cookie("token", "loggedout", {
-    expires: new Date(Date.now() + 10 * 1000), // 10 seconds expiration
+  res.clearCookie("token", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // Only set secure flag in production
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "Lax",
+    path: "/", // 👈 explicitly match login path
   });
 
   res.status(200).json({
@@ -248,50 +249,6 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
     );
   }
 });
-
-// // Resend password reset otp
-
-// exports.resendPasswordResetOTP = catchAsync(async (req, res, next) => {
-//   const { email } = req.body;
-
-//   if (!email) {
-//     return next(new AppError("Please provide your email.", 400));
-//   }
-
-//   const user = await User.findOne({ email });
-
-//   if (!user) {
-//     return next(new AppError("No user found with this email.", 404));
-//   }
-
-//   // Generate a new OTP
-//   const newOTP = generateOTP();
-//   user.resetPasswordOTP = newOTP;
-//   user.resetPasswordOTPExpires = Date.now() + 300000; // 5 minutes
-//   await user.save({ validateBeforeSave: false });
-
-//   // Send new OTP to user
-//   try {
-//     await sendEmail({
-//       email: user.email,
-//       subject: "Your New OTP for Password Reset",
-//       html: `<h3>Your new OTP is: ${newOTP}</h3>`,
-//     });
-
-//     res.status(200).json({
-//       status: "success",
-//       message: "New OTP has been sent to your email.",
-//     });
-//   } catch (error) {
-//     user.resetPasswordOTP = undefined;
-//     user.resetPasswordOTPExpires = undefined;
-//     await user.save({ validateBeforeSave: false });
-//     return next(
-//       new AppError("There was an error sending the email. Try again later!"),
-//       500
-//     );
-//   }
-// });
 
 // Reset Password
 exports.resetPassword = catchAsync(async (req, res, next) => {

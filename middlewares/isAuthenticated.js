@@ -6,8 +6,6 @@ const catchAsync = require("../utils/catchAsync");
 
 const isAuthenticated = catchAsync(async (req, res, next) => {
   const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
-  console.log(token);
-  console.log(req.cookies.token);
 
   if (!token) {
     return next(
