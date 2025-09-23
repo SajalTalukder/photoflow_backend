@@ -196,13 +196,11 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 
 // Logout functionality
-// Logout functionality
 exports.logout = catchAsync(async (req, res, next) => {
   res.clearCookie("token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "none" : "Lax",
-    path: "/", // 👈 explicitly match login path
   });
 
   res.status(200).json({
