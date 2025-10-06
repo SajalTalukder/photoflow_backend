@@ -6,6 +6,7 @@ const catchAsync = require("../utils/catchAsync");
 
 const isAuthenticated = catchAsync(async (req, res, next) => {
   const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+  console.log("FROM MIDDLEAREWS", token, "FINISHED.......");
 
   if (!token) {
     return next(
@@ -13,18 +14,27 @@ const isAuthenticated = catchAsync(async (req, res, next) => {
     );
   }
 
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("✅ Token decoded:", decoded);
 
-  const currentUser = await User.findById(decoded.id);
+    const currentUser = await User.findById(decoded.id);
 
-  if (!currentUser) {
+    if (!currentUser) {
+      return next(
+        new AppError("The user belonging to this token does not exist.", 401)
+      );
+    }
+
+    console.log("✅ User found:", currentUser.email);
+    req.user = currentUser;
+    next();
+  } catch (err) {
+    console.error("❌ JWT verification failed:", err.message);
     return next(
-      new AppError("The user belonging to this token does not exist.", 401)
+      new AppError("Invalid or expired token. Please log in again.", 401)
     );
   }
-
-  req.user = currentUser;
-  next();
 });
 
 module.exports = isAuthenticated;

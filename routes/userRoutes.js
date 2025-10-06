@@ -7,7 +7,7 @@ const {
   forgetPassword,
   resetPassword,
   changePassword,
-  resendPasswordResetOTP,
+
   logout,
 } = require("../controllers/authController");
 const isAuthenticated = require("../middlewares/isAuthenticated");

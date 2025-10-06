@@ -166,7 +166,11 @@ exports.searchUsers = catchAsync(async (req, res, next) => {
 });
 
 exports.getMe = catchAsync(async (req, res, next) => {
+  console.log("getMe called");
+
   const user = req.user;
+  console.log(user);
+
   if (!user) return next(new AppError("User not authenticated", 404));
   res.status(200).json({
     status: "success",
