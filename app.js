@@ -13,6 +13,8 @@ const postRouter = require("./routes/postRoutes");
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 app.use("/", express.static("uploads"));
 // 1) GLOBAL MIDDLEWARES
 // Set security HTTP headers
