@@ -40,29 +40,31 @@
 
 // module.exports = sendEmail;
 
-const nodemailer = require("nodemailer");
-const Sib = require("nodemailer-sendinblue-transport");
-
-const transporter = nodemailer.createTransport(
-  Sib({
-    apiKey: process.env.SENDINBLUE_API_KEY,
-  }),
-);
+const axios = require("axios");
 
 const sendEmail = async (options) => {
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    to: options.email,
-    subject: options.subject,
-    html: options.html,
-  };
-
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent:", info);
-    return info;
+    const response = await axios.post(
+      "https://api.sendinblue.com/v3/smtp/email",
+      {
+        sender: { name: "PhotoFlow", email: process.env.EMAIL_FROM },
+        to: [{ email: options.email }],
+        subject: options.subject,
+        htmlContent: options.html,
+      },
+      {
+        headers: {
+          "api-key": process.env.SENDINBLUE_API_KEY,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      },
+    );
+
+    console.log("Email sent:", response.data);
+    return response.data;
   } catch (err) {
-    console.error("Error sending email:", err);
+    console.error("Error sending email:", err.response?.data || err.message);
     throw new Error("There was an error sending the email. Try again later!");
   }
 };
