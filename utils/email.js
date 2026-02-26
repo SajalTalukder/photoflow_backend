@@ -12,6 +12,9 @@ const sendEmail = async (options) => {
   //   },
   // });
 
+  console.log("EMAIL:", process.env.EMAIL);
+  console.log("EMAIL_PASS:", process.env.EMAIL_PASS ? "Loaded" : "Missing");
+
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 587,
