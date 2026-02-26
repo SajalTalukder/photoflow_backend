@@ -25,7 +25,7 @@ const createSendToken = (user, statusCode, res, message) => {
   const token = signToken(user._id);
   const cookieOptions = {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
     ),
     httpOnly: true,
     secure: process.env.NODE_ENV === "production", //only secure in production
@@ -82,13 +82,13 @@ exports.signup = catchAsync(async (req, res, next) => {
       newUser,
       200,
       res,
-      "Registration successful. Check your email for OTP verification."
+      "Registration successful. Check your email for OTP verification.",
     );
   } catch (error) {
     await User.findByIdAndDelete(newUser.id);
     return next(
       new AppError("There was an error creating the account. Try again later!"),
-      500
+      500,
     );
   }
 });
@@ -109,7 +109,7 @@ exports.verifyAccount = catchAsync(async (req, res, next) => {
 
   if (Date.now() > user.otpExpires) {
     return next(
-      new AppError("OTP has expired. Please request a new OTP.", 400)
+      new AppError("OTP has expired. Please request a new OTP.", 400),
     );
   }
 
@@ -176,8 +176,8 @@ exports.resendOTP = catchAsync(async (req, res, next) => {
     return next(
       new AppError(
         "There was an error sending the email. Try again later!",
-        500
-      )
+        500,
+      ),
     );
   }
 });
@@ -240,12 +240,14 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
       message: "Password Reset Otp is send to your email",
     });
   } catch (err) {
+    console.log(err);
+
     user.resetPasswordOTP = undefined;
     user.resetPasswordOTPExpires = undefined;
     await user.save({ validateBeforeSave: false });
     return next(
       new AppError("There was an error sending the email. Try again later!"),
-      500
+      500,
     );
   }
 });
@@ -293,7 +295,7 @@ exports.changePassword = catchAsync(async (req, res, next) => {
   // Check if the new password and confirm password match
   if (newPassword !== newPasswordConfirm) {
     return next(
-      new AppError("New password and confirm password do not match", 400)
+      new AppError("New password and confirm password do not match", 400),
     );
   }
 
