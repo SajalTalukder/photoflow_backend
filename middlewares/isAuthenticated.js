@@ -10,7 +10,7 @@ const isAuthenticated = catchAsync(async (req, res, next) => {
 
   if (!token) {
     return next(
-      new AppError("You are not logged in! Please log in to access.", 401)
+      new AppError("You are not logged in! Please log in to access.", 401),
     );
   }
 
@@ -22,7 +22,7 @@ const isAuthenticated = catchAsync(async (req, res, next) => {
 
     if (!currentUser) {
       return next(
-        new AppError("The user belonging to this token does not exist.", 401)
+        new AppError("The user belonging to this token does not exist.", 401),
       );
     }
 
@@ -32,7 +32,7 @@ const isAuthenticated = catchAsync(async (req, res, next) => {
   } catch (err) {
     console.error("❌ JWT verification failed:", err.message);
     return next(
-      new AppError("Invalid or expired token. Please log in again.", 401)
+      new AppError("Invalid or expired token. Please log in again.", 401),
     );
   }
 });
