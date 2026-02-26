@@ -57,7 +57,7 @@ const sendEmail = async ({ email, subject, html }) => {
 
   try {
     const response = await resend.emails.send({
-      from: "PhotoFlow <noreply@yourdomain.com>", // verified sender
+      from: "PhotoFlow <sajaltalukder01@gmail.com>", // verified sender
       to: email,
       subject,
       html,
