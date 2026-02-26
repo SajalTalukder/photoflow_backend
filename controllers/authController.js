@@ -245,10 +245,17 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
     user.resetPasswordOTP = undefined;
     user.resetPasswordOTPExpires = undefined;
     await user.save({ validateBeforeSave: false });
-    return next(
-      new AppError("There was an error sending the email. Try again later!"),
-      500,
-    );
+    return res.status(500).json({
+      status: "error",
+      message: "There was an error sending the email. Try again later!",
+      data: {
+        err,
+      },
+    });
+    // return next(
+    //   new AppError("There was an error sending the email. Try again later!"),
+    //   500,
+    // );
   }
 });
 
