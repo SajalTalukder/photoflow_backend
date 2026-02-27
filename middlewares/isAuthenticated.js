@@ -1,12 +1,12 @@
-// isAuthenticated.js
-const jwt = require("jsonwebtoken");
-const User = require("../models/userModel"); // Adjust the path to your user model
-const AppError = require("../utils/appError");
-const catchAsync = require("../utils/catchAsync");
+import jwt from "jsonwebtoken";
+import User from "../models/userModel.js"; // Adjust the path to your user model
+import AppError from "../utils/appError.js";
+import catchAsync from "../utils/catchAsync.js";
 
 const isAuthenticated = catchAsync(async (req, res, next) => {
-  const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
-  console.log("FROM MIDDLEAREWS", token, "FINISHED.......");
+  // Grab token from cookies or Authorization header
+  const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
+  console.log("FROM MIDDLEWARE", token, "FINISHED.......");
 
   if (!token) {
     return next(
@@ -37,4 +37,4 @@ const isAuthenticated = catchAsync(async (req, res, next) => {
   }
 });
 
-module.exports = isAuthenticated;
+export default isAuthenticated;

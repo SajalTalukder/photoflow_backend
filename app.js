@@ -1,27 +1,33 @@
-const express = require("express");
-const morgan = require("morgan");
-const rateLimit = require("express-rate-limit");
-const helmet = require("helmet");
-const cors = require("cors");
-const cookieParser = require("cookie-parser");
-const mongoSanitize = require("express-mongo-sanitize");
-const path = require("path");
-const AppError = require("./utils/appError");
-const globalErrorHandler = require("./controllers/errorController");
-const userRouter = require("./routes/userRoutes");
-const postRouter = require("./routes/postRoutes");
+import express from "express";
+import morgan from "morgan";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import mongoSanitize from "express-mongo-sanitize";
+import path from "path";
+import { fileURLToPath } from "url";
+
+import AppError from "./utils/appError.js";
+import globalErrorHandler from "./controllers/errorController.js";
+import userRouter from "./routes/userRoutes.js";
+import postRouter from "./routes/postRoutes.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
 app.set("trust proxy", 1);
 
 app.use("/", express.static("uploads"));
+
 // 1) GLOBAL MIDDLEWARES
-// Set security HTTP headers
 app.use(cookieParser());
 
 // Set security HTTP headers
 app.use(helmet());
+
 app.use(
   cors({
     origin: ["http://localhost:3000", "https://photoflow-three.vercel.app"],
@@ -33,20 +39,6 @@ app.use(
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
-
-// // Limit requests from the same API
-// const limiter = rateLimit({
-//   validate: {
-//     validationsConfig: false,
-//     // ...
-//     default: true,
-//   },
-//   // ...
-//   max: 10000,
-//   windowMs: 60 * 60 * 1000,
-//   message: "Too many requests from this IP, please try again in an hour!",
-// });
-// app.use("/api", limiter);
 
 // Body parser, reading data from the body into req.body
 app.use(express.json({ limit: "10kb" }));
@@ -60,21 +52,19 @@ app.use(express.static(path.join(__dirname, "public")));
 // Test middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
-  // console.log(req.headers);
   next();
 });
 
-// // // 3) ROUTES
-// // app.use("/api/v1/products", productRouter);
+// ROUTES
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/posts", postRouter);
-// // app.use("/api/v1/reviews", reviewRouter);
-// // app.use("/api/v1/payment", paymentRouter);
 
+// Handle unhandled routes
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
+// Global error handler
 app.use(globalErrorHandler);
 
-module.exports = app;
+export default app;

@@ -1,4 +1,4 @@
-const cloudinary = require("cloudinary").v2;
+import { v2 as cloudinary } from "cloudinary";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -14,9 +14,8 @@ const uploadToCloudinary = async (fileUri) => {
     return response;
   } catch (error) {
     console.log(error);
-
     throw new Error("Failed to upload image to Cloudinary");
   }
 };
 
-module.exports = { uploadToCloudinary, cloudinary };
+export { uploadToCloudinary, cloudinary };

@@ -1,42 +1,39 @@
-const catchAsync = require("../utils/catchAsync");
-const AppError = require("../utils/appError");
-const User = require("../models/userModel");
-const getDataUri = require("../utils/datauri");
-const { uploadToCloudinary } = require("../utils/cloudinary");
+import catchAsync from "../utils/catchAsync.js";
+import AppError from "../utils/appError.js";
+import User from "../models/userModel.js";
+import getDataUri from "../utils/datauri.js";
+import { uploadToCloudinary } from "../utils/cloudinary.js";
 
-exports.getProfile = catchAsync(async (req, res, next) => {
+// Get user profile by ID
+export const getProfile = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  // Fetch the user data from the database using the user ID from the token
+
   const user = await User.findById(id)
     .select(
-      "-password -otp -otpExpires -resetPasswordOTP -resetPasswordOTPExpires -passwordConfirm"
+      "-password -otp -otpExpires -resetPasswordOTP -resetPasswordOTPExpires -passwordConfirm",
     )
     .populate({
-      path: "posts", // Populate the 'posts' field
-      options: { sort: { createdAt: -1 } }, // Sort posts by 'createdAt' in descending order
+      path: "posts",
+      options: { sort: { createdAt: -1 } },
     })
     .populate({
-      path: "savedPosts", // Populate the 'savedPosts' field
-      options: { sort: { createdAt: -1 } }, // Sort savedPosts by 'createdAt' in descending order
+      path: "savedPosts",
+      options: { sort: { createdAt: -1 } },
     });
 
-  // If no user is found, return an error
   if (!user) {
     return next(new AppError("User not found", 404));
   }
 
-  // Send the user profile data
   res.status(200).json({
     status: "success",
-    data: {
-      user,
-    },
+    data: { user },
   });
 });
 
-// Edit Profile Functionality
-exports.editProfile = catchAsync(async (req, res, next) => {
-  const userId = req.user.id; // Assuming user is authenticated and ID is available in req.user
+// Edit Profile
+export const editProfile = catchAsync(async (req, res, next) => {
+  const userId = req.user.id;
   const { bio } = req.body;
   const profilePicture = req.file;
   console.log(bio, profilePicture);
@@ -49,10 +46,8 @@ exports.editProfile = catchAsync(async (req, res, next) => {
   }
 
   const user = await User.findById(userId).select("-password");
-
   if (!user) return next(new AppError("User Not Found", 404));
 
-  // Update user profile fields
   if (bio) user.bio = bio;
   if (profilePicture) user.profilePicture = cloudResponse.secure_url;
 
@@ -61,122 +56,101 @@ exports.editProfile = catchAsync(async (req, res, next) => {
   return res.status(200).json({
     message: "Profile updated.",
     success: "success",
-    data: {
-      user,
-    },
+    data: { user },
   });
 });
 
-// get suggested users
-exports.suggestedUser = catchAsync(async (req, res, next) => {
+// Get suggested users
+export const suggestedUser = catchAsync(async (req, res, next) => {
   const loginUserId = req.user.id;
   const users = await User.find({ _id: { $ne: loginUserId } }).select(
-    "-password -otp -otpExpires -resetPasswordOTP -resetPasswordOTPExpires -passwordConfirm"
+    "-password -otp -otpExpires -resetPasswordOTP -resetPasswordOTPExpires -passwordConfirm",
   );
+
   res.status(200).json({
     status: "success",
-    data: {
-      users,
-    },
+    data: { users },
   });
 });
 
-exports.followUnfollow = catchAsync(async (req, res, next) => {
-  const loggedInUserId = req.user._id; // Get the logged-in user ID
-  const targetUserId = req.params.id; // Get the target user ID from request parameters
+// Follow/Unfollow user
+export const followUnfollow = catchAsync(async (req, res, next) => {
+  const loggedInUserId = req.user._id;
+  const targetUserId = req.params.id;
 
-  // Prevent user from following/unfollowing themselves
   if (loggedInUserId.toString() === targetUserId)
     return next(new AppError("You cannot follow/unfollow yourself", 400));
 
-  // Fetch the target user from the database
   const targetUser = await User.findById(targetUserId);
+  if (!targetUser) return next(new AppError("User not found", 404));
 
-  // Check if the target user exists
-  if (!targetUser) {
-    return next(new AppError("User not found", 404));
-  }
-
-  // Determine if the logged-in user is already following the target user
   const isFollowing = targetUser.followers.includes(loggedInUserId);
 
   if (isFollowing) {
-    // Unfollow action
     await Promise.all([
       User.updateOne(
         { _id: loggedInUserId },
-        { $pull: { following: targetUserId } } // Remove the target user from the 'following' list
+        { $pull: { following: targetUserId } },
       ),
       User.updateOne(
         { _id: targetUserId },
-        { $pull: { followers: loggedInUserId } } // Remove the logged-in user from the 'followers' list
+        { $pull: { followers: loggedInUserId } },
       ),
     ]);
   } else {
-    // Follow action
     await Promise.all([
       User.updateOne(
         { _id: loggedInUserId },
-        { $addToSet: { following: targetUserId } } // Add the target user to the 'following' list
+        { $addToSet: { following: targetUserId } },
       ),
       User.updateOne(
         { _id: targetUserId },
-        { $addToSet: { followers: loggedInUserId } } // Add the logged-in user to the 'followers' list
+        { $addToSet: { followers: loggedInUserId } },
       ),
     ]);
   }
 
-  // Fetch the updated logged-in user details
-  const updatedLoggedInUser = await User.findById(loggedInUserId).select(
-    "-password"
-  );
+  const updatedLoggedInUser =
+    await User.findById(loggedInUserId).select("-password");
 
-  // Send the response with the updated logged-in user
   res.status(200).json({
     message: isFollowing ? "Unfollowed successfully" : "Followed successfully",
     status: "success",
-    data: {
-      user: updatedLoggedInUser,
-    },
+    data: { user: updatedLoggedInUser },
   });
 });
 
-exports.searchUsers = catchAsync(async (req, res, next) => {
+// Search users
+export const searchUsers = catchAsync(async (req, res, next) => {
   const { query } = req.query;
-  const loggedInUserId = req.user._id; // Get the logged-in user's ID
+  const loggedInUserId = req.user._id;
 
-  // Validate the query parameter
   if (!query || query.trim() === "") {
     return next(new AppError("Search query cannot be empty", 400));
   }
 
-  // Perform the search
   const users = await User.find({
-    username: { $regex: query, $options: "i" }, // Case-insensitive search
-    _id: { $ne: loggedInUserId }, // Exclude the logged-in user
-  }).select("username profilePicture bio"); // Select only the necessary fields
+    username: { $regex: query, $options: "i" },
+    _id: { $ne: loggedInUserId },
+  }).select("username profilePicture bio");
 
   res.status(200).json({
     status: "success",
     results: users.length,
-    data: {
-      users,
-    },
+    data: { users },
   });
 });
 
-exports.getMe = catchAsync(async (req, res, next) => {
+// Get authenticated user's own profile
+export const getMe = catchAsync(async (req, res, next) => {
   console.log("getMe called");
-
   const user = req.user;
-  console.log(user);
 
   if (!user) return next(new AppError("User not authenticated", 404));
+
   res.status(200).json({
     status: "success",
-    message: "authenticated User",
-    data: {
-      user,
-    },
+    message: "Authenticated User",
+    data: { user },
   });
 });

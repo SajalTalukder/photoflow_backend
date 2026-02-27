@@ -1,9 +1,9 @@
-const cron = require("cron");
-const https = require("https");
+import { CronJob } from "cron";
+import https from "https";
 
 const URL = "https://photoflow.onrender.com";
 
-const job = new cron.CronJob("*/14 * * * *", function () {
+const job = new CronJob("*/14 * * * *", function () {
   https
     .get(URL, (res) => {
       if (res.statusCode === 200) {
@@ -17,4 +17,4 @@ const job = new cron.CronJob("*/14 * * * *", function () {
     });
 });
 
-module.exports = job;
+export default job;

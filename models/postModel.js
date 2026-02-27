@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const Comment = require("./commentModel");
+import mongoose from "mongoose";
+import Comment from "./commentModel.js";
 
 const postSchema = new mongoose.Schema(
   {
@@ -14,7 +14,7 @@ const postSchema = new mongoose.Schema(
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Reference to the User model
+      ref: "User",
       required: [true, "User ID is required"],
     },
     likes: [
@@ -26,7 +26,7 @@ const postSchema = new mongoose.Schema(
     comments: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Comment", // Reference to the Comment model
+        ref: "Comment",
       },
     ],
     createdAt: {
@@ -34,7 +34,7 @@ const postSchema = new mongoose.Schema(
       default: Date.now,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Indexing to improve performance on queries
@@ -42,4 +42,4 @@ postSchema.index({ user: 1, createdAt: -1 });
 
 const Post = mongoose.model("Post", postSchema);
 
-module.exports = Post;
+export default Post;

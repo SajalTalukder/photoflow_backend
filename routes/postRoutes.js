@@ -1,7 +1,7 @@
-const express = require("express");
+import express from "express";
 
-const upload = require("../middlewares/multer");
-const {
+import upload from "../middlewares/multer.js";
+import {
   createPost,
   getAllPosts,
   getUserPosts,
@@ -9,8 +9,8 @@ const {
   deletePost,
   likeOrDislikePost,
   addComment,
-} = require("../controllers/postController");
-const isAuthenticated = require("../middlewares/isAuthenticated");
+} from "../controllers/postController.js";
+import isAuthenticated from "../middlewares/isAuthenticated.js";
 
 const router = express.Router();
 
@@ -18,7 +18,7 @@ router.post(
   "/create-post",
   isAuthenticated,
   upload.single("image"),
-  createPost
+  createPost,
 );
 
 router.get("/all", getAllPosts);
@@ -28,4 +28,4 @@ router.delete("/delete-post/:id", isAuthenticated, deletePost);
 router.post("/like-dislike/:id", isAuthenticated, likeOrDislikePost);
 router.post("/comment/:id", isAuthenticated, addComment);
 
-module.exports = router;
+export default router;
